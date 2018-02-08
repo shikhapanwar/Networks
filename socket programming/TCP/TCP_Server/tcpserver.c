@@ -186,64 +186,66 @@ int main(int argc, char **argv) {
      * read: read input string from the client
      */
 
-
-    bzero(buf, BUFSIZE);
-
-    /* receive filename and filesize from the client */
-    n = recv(childfd, buf, BUFSIZE,0);
-    if (n < 0) 
-      error("ERROR reading from socket");
-
-    printf("server received %d bytes: %s", n, buf);
-
-
-    /* Seperate out filename and filesize */
-    pch = strtok (buf," ");
-    printf("\nFilename :- %s",pch);
-    strcpy(file_name,pch);
-    pch = strtok (NULL," ");
-    printf(" Filesize :- %s\n",pch);
-    file_size = atoi(pch);
-
-    /* Open file */
-    fp = fopen(file_name,"w+");
-    
-    /* Send acknowledgement back to client */
-    n = send(childfd, buf, strlen(buf),0);
-    if (n < 0) 
-      error("ERROR writing to socket");
-
-
-    while(1)
+    if(fork() == 0)
     {
       bzero(buf, BUFSIZE);
 
-      /* receieve chunks of file from the client */
-      n = recv(childfd, buf, BUFSIZE,0);     
+      /* receive filename and filesize from the client */
+      n = recv(childfd, buf, BUFSIZE,0);
       if (n < 0) 
         error("ERROR reading from socket");
 
-      /* write the number of bytes received to the file */
-      fwrite(buf,1,n,fp);
+      printf("server received %d bytes: %s", n, buf);
 
-      /*file_size yet to be received */
-      file_size-=n;
 
-      if(file_size <=0 )  break;
+      /* Seperate out filename and filesize */
+      pch = strtok (buf," ");
+      printf("\nFilename :- %s",pch);
+      strcpy(file_name,pch);
+      pch = strtok (NULL," ");
+      printf(" Filesize :- %s\n",pch);
+      file_size = atoi(pch);
 
+      /* Open file */
+      fp = fopen(file_name,"w+");
+      
+      /* Send acknowledgement back to client */
+      n = send(childfd, buf, strlen(buf),0);
+      if (n < 0) 
+        error("ERROR writing to socket");
+
+
+      while(1)
+      {
+        bzero(buf, BUFSIZE);
+
+        /* receieve chunks of file from the client */
+        n = recv(childfd, buf, BUFSIZE,0);     
+        if (n < 0) 
+          error("ERROR reading from socket");
+
+        /* write the number of bytes received to the file */
+        fwrite(buf,1,n,fp);
+
+        /*file_size yet to be received */
+        file_size-=n;
+
+        if(file_size <=0 )  break;
+
+      }
+
+      fclose(fp);
+      strcpy(MD_checksum_val,"\0");
+
+      /* compute MD5_checksum hash value */ 
+      MD5_checksum(file_name,MD_checksum_val);
+
+      /*send the MD5_checksum hash value to the client */
+      n = send(childfd, MD_checksum_val, strlen(MD_checksum_val),0);
+      if (n < 0) 
+        error("ERROR writing to socket");
+
+      close(childfd);
     }
-
-    fclose(fp);
-    strcpy(MD_checksum_val,"\0");
-
-    /* compute MD5_checksum hash value */ 
-    MD5_checksum(file_name,MD_checksum_val);
-
-    /*send the MD5_checksum hash value to the client */
-    n = send(childfd, MD_checksum_val, strlen(MD_checksum_val),0);
-    if (n < 0) 
-      error("ERROR writing to socket");
-
-    close(childfd);
   }
 }
