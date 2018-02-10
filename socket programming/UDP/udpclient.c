@@ -12,13 +12,22 @@
 #include <netinet/in.h>
 #include <netdb.h> 
 #include <math.h>
+#include <openssl/md5.h>
 
-#define TIME_OUT 40
+#define TIME_OUT 1
 #define BUFSIZE 1024
 #define SEQ_NUM_SIZE 4
 /* 
  * error - wrapper for perror
  */
+
+
+struct MESSAGE
+{  
+  int seq_no;
+  char buf[BUFSIZE];
+};
+
   int sockfd, portno, n;
     int serverlen;
     struct sockaddr_in serveraddr;
@@ -27,6 +36,7 @@
     char buf[BUFSIZE];
     fd_set readfds, masterfds;
     struct timeval timeout;
+    struct  MESSAGE *message;
 
 
 void error(char *msg) {
@@ -35,12 +45,53 @@ void error(char *msg) {
 }
 
 
-int send_and_wait_for_ack(int seq)
+/*function to compute to MD5_checksum*/
+void MD5_checksum(char *filename,char *output)
 {
+    strcpy(output,"");
+    int n;
+    MD5_CTX c;
+    char buf[BUFSIZE];
+    char temp[7];
+    ssize_t bytes;
+    unsigned char out[MD5_DIGEST_LENGTH];
+    FILE *fp  = fopen(filename,"r");
+    MD5_Init(&c);
+    bytes=fread(buf,1, BUFSIZE, fp);
+    while(!feof(fp))
+    {
+        MD5_Update(&c, buf, bytes);
+        bytes=fread(buf,1, BUFSIZE, fp);
+    }
+
+    MD5_Final(out, &c);
+
+    for(n=0; n<MD5_DIGEST_LENGTH; n++)
+    {
+        snprintf(temp, 6, "%02x", out[n]);
+        strcat(output,temp);
+    }
+    fclose(fp);
+}
+
+
+
+
+int send_and_wait_for_ack(int seq, int sz)
+{
+    FD_ZERO(&masterfds);
+    FD_SET(sockfd, &masterfds);
+    memcpy(&readfds, &masterfds, sizeof(fd_set));
+    //printf("sendingbytes:%d\n", sz);
+    //printf("strlen=%d\n",strlen(message -> buf));
+  printf("attempting to send packet %d\n", seq);
   int seq_;
   char *pch;
-
-    n = sendto(sockfd, buf, strlen(buf), 0, &serveraddr, serverlen);
+    message->seq_no = seq;
+  //printf("clients sends %d and data as %d bytes\n", message->seq_no, 1+strlen(message->buf));
+  //printf("size%d\n", sz);
+    n = sendto(sockfd, message, sz, 0, &serveraddr, serverlen);
+    printf("packet sent\n");
     
     if (n < 0) 
       error("ERROR in sendto");
@@ -53,11 +104,17 @@ int send_and_wait_for_ack(int seq)
 
     if (FD_ISSET(sockfd, &readfds))
    {
-         n = recvfrom(sockfd, buf, BUFSIZE, 0, &serveraddr, &serverlen);
+         n = recvfrom(sockfd, message, sizeof(message), 0, &serveraddr, &serverlen);
         if (n < 0) 
             error("ERROR in recvfrom");
-            seq_ = atoi(buf);
-            printf("d\n",(int)seq_);
+        seq_ = message->seq_no;
+        if(seq_ != seq)
+        {
+            printf("seq didn't match, %d %d\n", seq, seq_);
+          return -1;
+        }
+        printf("sending successful seq number did match with ack %d\n", seq_);
+
         return 0; //success
      // read from the socket
    }
@@ -72,11 +129,14 @@ int send_and_wait_for_ack(int seq)
 
 int main(int argc, char **argv) 
 {   
+    message = (struct MESSAGE *) malloc(sizeof(struct  MESSAGE));
     int no_of_packets, i, tmp;
     char filename[BUFSIZE];
     char size_str[BUFSIZE];
     char filename_temp[BUFSIZE];
     int size, check;
+    char MD5_checksum_val[200];
+
 
     timeout.tv_sec = TIME_OUT;                    /*set the timeout to 10 seconds*/
     timeout.tv_usec = 0;
@@ -92,9 +152,7 @@ int main(int argc, char **argv)
     /* socket: create the socket */
     sockfd = socket(AF_INET, SOCK_DGRAM, 0);
 
-    FD_ZERO(&masterfds);
-    FD_SET(sockfd, &masterfds);
-    memcpy(&readfds, &masterfds, sizeof(fd_set));
+    
 
 
     if (sockfd < 0) 
@@ -124,7 +182,7 @@ int main(int argc, char **argv)
 
     /*remove '\n' character from filename */
     filename[strlen(filename)-1] = '\0';  
-    strcpy(buf,filename);
+    strcpy(message->buf,filename);
   
 
 
@@ -136,35 +194,45 @@ int main(int argc, char **argv)
       exit(1);             
    }
 
+       /* Get the MD5_checksum hash value of the file */
+    MD5_checksum(filename,MD5_checksum_val);
+
 
     /* Get the file size */
     fseek(fp, 0, SEEK_END); 
     size = ftell(fp); 
     fseek(fp, 0, SEEK_SET);
-    no_of_packets = (int)ceil(1.0*size/(BUFSIZE-SEQ_NUM_SIZE));
+    no_of_packets = (int)ceil(1.0*size/(BUFSIZE));
 
     /* Attach the file name and size of the file and store it in 'filename_temp' */
+    
     int cx = snprintf ( size_str, BUFSIZE, " %04d %d", no_of_packets, size );  // 5 <- SEQ_NUM_SIZE  
-    strcat(buf,size_str);
+    strcat(message->buf,size_str);
+    message->seq_no = 0;
 
 
     serverlen = sizeof(serveraddr);
-    printf("The file name is %s\n", filename);        
+    //printf("The file name is %s\n", filename);        
 
-    while(send_and_wait_for_ack(0) == -1);
+    while(send_and_wait_for_ack(0, 1+strlen(message->buf)+sizeof(int)) == -1);
 
 
     bzero(buf, BUFSIZE);
+    bzero(message->buf, BUFSIZE);
     i = 1;
     while(!feof(fp))
     {
         bzero(buf, BUFSIZE);
+        bzero(message->buf, BUFSIZE);
         //tmp = snprintf ( buf, BUFSIZE, "%d", i );    
         //strcpy(buf, atoi(i) );
-        check = fread(buf,1, BUFSIZE - SEQ_NUM_SIZE, fp);
-        cx = snprintf ( size_str, BUFSIZE, "%04d", i );  // 5 <- SEQ_NUM_SIZE  
-        strcat(buf,size_str);
-        while(send_and_wait_for_ack(i) == -1);
+        check = fread(message -> buf,1, BUFSIZE, fp);
+        message->seq_no = i;
+       // printf("reading %d bytes for packet  %d\n", check, i);
+        //strcpy(message -> buf, buf);
+        //cx = snprintf ( size_str, BUFSIZE, "%04d", i );  // 5 <- SEQ_NUM_SIZE  
+        //strcat(buf,size_str);
+        while(send_and_wait_for_ack(i, check + sizeof(int)) == -1);
         /* Read contents from the file */
 
         /* send number of bytes read from the file */
@@ -176,39 +244,39 @@ int main(int argc, char **argv)
         //bzero(buf, BUFSIZE);
         i++;
     }
+
+
+
     fclose(fp);
 
-    /*
-    n = sendto(sockfd, buf, strlen(buf), 0, &serveraddr, serverlen);
-    
+
+    bzero(buf, BUFSIZE);
+
+    /* Receive MD5_checksum hash value from the server */
+    n = recvfrom(sockfd, buf, BUFSIZE, 0, &serveraddr, &serverlen);
+    //printf("received:%s\n",buf );
     if (n < 0) 
-      error("ERROR in sendto");
+       error("ERROR in recvfrom");
+    printf("%d bytes received of checksum received", n);
+        
 
-  if (select(sockfd +1, &readfds, NULL, NULL, &timeout) < 0)
-   {
-     perror("on select");
-     exit(1);
-   }
+    /* Compare the hash values */
+     //printf("\n\"%s\"\n\"%s\"\n %d %d", MD5_checksum_val, buf, strlen(MD5_checksum_val),strlen(buf));
 
-    if (FD_ISSET(sockfd, &readfds))
-   {
-         n = recvfrom(sockfd, buf, strlen(buf), 0, &serveraddr, &serverlen);
-        if (n < 0) 
-            error("ERROR in recvfrom");
-        printf("Echo from server: %s", buf);
-     // read from the socket
+    if(strcmp(MD5_checksum_val,buf) == 0)
+    {
+      printf("\nMD5 Matched\n");
    }
-   else
-   {
-        printf("timeout error\n");
-     // the socket timedout
-   }
-   */
-    
-    /* print the server's reply */
-   // n = recvfrom(sockfd, buf, strlen(buf), 0, &serveraddr, &serverlen);
-    //if (n < 0) 
-      //error("ERROR in recvfrom");
+   else    printf("\nMD5 Not Matched\n");
+   strcpy(buf, "matched");
+
+
+   n = sendto(sockfd, buf, strlen(buf)+1, 0, &serveraddr, serverlen);
+   //printf("sending:%s\n",buf );
+
+    close(sockfd);
+
+
     
     return 0;
 }

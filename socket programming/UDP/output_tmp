@@ -1,9 +1,0 @@
-Hi, how are you
-
-all: server client
-
-server: udpserver.c
-	gcc -Wall udpserver.c -o server 
-
-client: udpclient.c
-	gcc -Wall udpclient.c -o client -lcrypto -lssl
