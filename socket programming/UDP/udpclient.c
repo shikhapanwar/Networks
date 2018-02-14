@@ -82,16 +82,12 @@ int send_and_wait_for_ack(int seq, int sz)
     FD_ZERO(&masterfds);
     FD_SET(sockfd, &masterfds);
     memcpy(&readfds, &masterfds, sizeof(fd_set));
-    //printf("sendingbytes:%d\n", sz);
-    //printf("strlen=%d\n",strlen(message -> buf));
-  printf("attempting to send packet %d\n", seq);
-  int seq_;
-  char *pch;
+   // printf("attempting to send packet %d\n", seq);
+    int seq_;
+    char *pch;
     message->seq_no = seq;
-  //printf("clients sends %d and data as %d bytes\n", message->seq_no, 1+strlen(message->buf));
-  //printf("size%d\n", sz);
     n = sendto(sockfd, message, sz, 0, &serveraddr, serverlen);
-    printf("packet sent\n");
+    //printf("packet sent\n");
     
     if (n < 0) 
       error("ERROR in sendto");
@@ -110,17 +106,17 @@ int send_and_wait_for_ack(int seq, int sz)
         seq_ = message->seq_no;
         if(seq_ != seq)
         {
-            printf("seq didn't match, %d %d\n", seq, seq_);
+            //printf("seq didn't match, %d %d\n", seq, seq_);
           return -1;
         }
-        printf("sending successful seq number did match with ack %d\n", seq_);
+       // printf("sending successful seq number did match with ack %d\n", seq_);
 
         return 0; //success
      // read from the socket
    }
    else
    {
-        printf("timeout error\n");
+        //printf("timeout error\n");
         return -1; // ack packet not received
    }
     
@@ -224,24 +220,9 @@ int main(int argc, char **argv)
     {
         bzero(buf, BUFSIZE);
         bzero(message->buf, BUFSIZE);
-        //tmp = snprintf ( buf, BUFSIZE, "%d", i );    
-        //strcpy(buf, atoi(i) );
         check = fread(message -> buf,1, BUFSIZE, fp);
         message->seq_no = i;
-       // printf("reading %d bytes for packet  %d\n", check, i);
-        //strcpy(message -> buf, buf);
-        //cx = snprintf ( size_str, BUFSIZE, "%04d", i );  // 5 <- SEQ_NUM_SIZE  
-        //strcat(buf,size_str);
         while(send_and_wait_for_ack(i, check + sizeof(int)) == -1);
-        /* Read contents from the file */
-
-        /* send number of bytes read from the file */
-        //n = send(sockfd, buf, check,0);
-        //if (n < 0) 
-        //  error("ERROR writing to socket");
-
-        /* empty buffer */
-        //bzero(buf, BUFSIZE);
         i++;
     }
 
@@ -257,11 +238,10 @@ int main(int argc, char **argv)
     //printf("received:%s\n",buf );
     if (n < 0) 
        error("ERROR in recvfrom");
-    printf("%d bytes received of checksum received", n);
+    //printf("%d bytes received of checksum received", n);
         
 
     /* Compare the hash values */
-     //printf("\n\"%s\"\n\"%s\"\n %d %d", MD5_checksum_val, buf, strlen(MD5_checksum_val),strlen(buf));
 
     if(strcmp(MD5_checksum_val,buf) == 0)
     {
@@ -272,8 +252,6 @@ int main(int argc, char **argv)
 
 
    n = sendto(sockfd, buf, strlen(buf)+1, 0, &serveraddr, serverlen);
-   //printf("sending:%s\n",buf );
-
     close(sockfd);
 
 

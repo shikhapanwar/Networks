@@ -136,7 +136,7 @@ int main(int argc, char **argv) {
     error("ERROR on binding");
   while (1) {
 
-
+    printf("\nServer running\n");
   /* 
    * main loop: wait for a datagram, then echo it
    */
@@ -169,9 +169,9 @@ int main(int argc, char **argv) {
     strcpy(file_name,pch);
     int cx = snprintf ( file_name_, BUFSIZE, "output_%s", file_name);  // 5 <- SEQ_NUM_SIZE  
     pch = strtok (NULL," ");
-    printf(" no_of_packets :- %s\n",pch);
+   printf(" no_of_packets :- %s\n",pch);
     no_of_packets = atoi(pch);
-    printf("Total  no_of_packets%d\n",no_of_packets );
+    //printf("Total  no_of_packets%d\n",no_of_packets );
     
 
     /* Open file */
@@ -205,14 +205,14 @@ int main(int argc, char **argv) {
       error("ERROR in recvfrom");
         if(i == message -> seq_no)
         {
-          printf("packet matched %d\n", i);
-          printf("no. of packets %d\n", no_of_packets );
+          //printf("packet matched %d\n", i);
+         // printf("no. of packets %d\n", no_of_packets );
           no_of_packets--;
           i++;
         }
         else
         {
-          printf("Wrong packet received\n,");
+          //printf("Wrong packet received\n,");
           continue;
         }
 
@@ -242,9 +242,11 @@ int main(int argc, char **argv) {
     
   }
   fclose(fp);
+  printf("File received\n");
   //strcpy(MD_checksum_val,"\0");
 
   /* compute MD5_checksum hash value */ 
+  bzero(MD_checksum_val, 200);
   MD5_checksum(file_name_,MD_checksum_val);
 
     /*send the MD5_checksum hash value to the client */
@@ -252,8 +254,6 @@ int main(int argc, char **argv) {
     while(1)
     {
       n = sendto(sockfd, MD_checksum_val, strlen(MD_checksum_val)+1, 0, (struct sockaddr *) &clientaddr, clientlen);
-      printf("%d bytes sent\n", n );
-      printf("MD_check:%s, size : %d\n", MD_checksum_val, strlen(MD_checksum_val));
     
         if (n < 0) 
             error("ERROR in sendto");
@@ -266,25 +266,18 @@ int main(int argc, char **argv) {
 
           if (FD_ISSET(sockfd, &readfds))
          {
-          //printf("check\n");
                n = recvfrom(sockfd, buf, BUFSIZE, 0, (struct sockaddr *) &clientaddr, &clientlen);
-              // printf("received:%s\n",buf);
               if (n < 0) 
                   error("ERROR in recvfrom");
               if(strcmp(buf, "matched"))
               {
-                //printf("seq didn't match, %d %d\n", seq, seq_);
                 continue;
               }
-              //printf("seq number did match %d\n", seq_);
 
-             // printf("MD5 checksum sent\n"); //success
               break;
-           // read from the socket
          }
          else
          {
-              //printf("timeout error\n");
               printf("timeout error\n");// ack packet not received
               continue;
          }
