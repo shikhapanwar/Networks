@@ -170,8 +170,12 @@ int main(int argc, char **argv) {
     int cx = snprintf ( file_name_, BUFSIZE, "output_%s", file_name);  // 5 <- SEQ_NUM_SIZE  
     pch = strtok (NULL," ");
    printf(" no_of_packets :- %s\n",pch);
+       printf("check\n");
+
     no_of_packets = atoi(pch);
-    //printf("Total  no_of_packets%d\n",no_of_packets );
+    printf("check\n");
+    pch = strtok (NULL," ");
+     printf("Size :- %s\n",pch);
     
 
     /* Open file */
