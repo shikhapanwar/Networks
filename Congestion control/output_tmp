@@ -1,288 +1,400 @@
-1
 all: server client
 
 server: udpserver.c
-  gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
+	gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
 
 client: udpclient.c
-  gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
+	gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
 
 clean:
-  rm server client
-2
+	rm server client
 all: server client
 
 server: udpserver.c
-  gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
+	gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
 
 client: udpclient.c
-  gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
+	gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
 
 clean:
-  rm server client
-
-3
+	rm server client
 all: server client
 
 server: udpserver.c
-  gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
+	gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
 
 client: udpclient.c
-  gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
+	gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
 
 clean:
-  rm server client
-4
+	rm server client
 all: server client
 
 server: udpserver.c
-  gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
+	gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
 
 client: udpclient.c
-  gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
+	gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
 
 clean:
-  rm server client
-
-5
+	rm server client
 all: server client
 
 server: udpserver.c
-  gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
+	gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
 
 client: udpclient.c
-  gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
+	gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
 
 clean:
-  rm server client
-11
+	rm server client
 all: server client
 
 server: udpserver.c
-  gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
+	gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
 
 client: udpclient.c
-  gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
+	gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
 
 clean:
-  rm server client
-12
+	rm server client
 all: server client
 
 server: udpserver.c
-  gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
+	gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
 
 client: udpclient.c
-  gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
+	gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
 
 clean:
-  rm server client
-
-13
+	rm server client
 all: server client
 
 server: udpserver.c
-  gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
+	gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
 
 client: udpclient.c
-  gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
+	gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
 
 clean:
-  rm server client
-14
+	rm server client
 all: server client
 
 server: udpserver.c
-  gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
+	gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
 
 client: udpclient.c
-  gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
+	gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
 
 clean:
-  rm server client
-
-15
+	rm server client
 all: server client
 
 server: udpserver.c
-  gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
+	gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
 
 client: udpclient.c
-  gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
+	gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
 
 clean:
-  rm server client
-
-21
+	rm server client
 all: server client
 
 server: udpserver.c
-  gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
+	gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
 
 client: udpclient.c
-  gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
+	gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
 
 clean:
-  rm server client
-22
+	rm server client
 all: server client
 
 server: udpserver.c
-  gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
+	gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
 
 client: udpclient.c
-  gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
+	gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
 
 clean:
-  rm server client
-
-23
+	rm server client
 all: server client
 
 server: udpserver.c
-  gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
+	gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
 
 client: udpclient.c
-  gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
+	gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
 
 clean:
-  rm server client
-24
+	rm server client
 all: server client
 
 server: udpserver.c
-  gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
+	gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
 
 client: udpclient.c
-  gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
+	gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
 
 clean:
-  rm server client
-
-25
+	rm server client
 all: server client
 
 server: udpserver.c
-  gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
+	gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
 
 client: udpclient.c
-  gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
+	gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
 
 clean:
-  rm server client
-
-31
+	rm server client
 all: server client
 
 server: udpserver.c
-  gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
+	gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
 
 client: udpclient.c
-  gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
+	gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
 
 clean:
-  rm server client
-32
+	rm server client
 all: server client
 
 server: udpserver.c
-  gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
+	gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
 
 client: udpclient.c
-  gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
+	gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
 
 clean:
-  rm server client
-
-33
+	rm server client
 all: server client
 
 server: udpserver.c
-  gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
+	gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
 
 client: udpclient.c
-  gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
+	gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
 
 clean:
-  rm server client
-34
+	rm server client
 all: server client
 
 server: udpserver.c
-  gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
+	gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
 
 client: udpclient.c
-  gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
+	gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
 
 clean:
-  rm server client
-
-35
+	rm server client
 all: server client
 
 server: udpserver.c
-  gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
+	gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
 
 client: udpclient.c
-  gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
+	gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
 
 clean:
-  rm server client
-
-41
+	rm server client
 all: server client
 
 server: udpserver.c
-  gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
+	gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
 
 client: udpclient.c
-  gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
+	gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
 
 clean:
-  rm server client
-42
+	rm server client
 all: server client
 
 server: udpserver.c
-  gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
+	gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
 
 client: udpclient.c
-  gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
+	gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
 
 clean:
-  rm server client
-
-43
+	rm server client
 all: server client
 
 server: udpserver.c
-  gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
+	gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
 
 client: udpclient.c
-  gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
+	gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
 
 clean:
-  rm server client
-44
+	rm server client
 all: server client
 
 server: udpserver.c
-  gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
+	gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
 
 client: udpclient.c
-  gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
+	gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
 
 clean:
-  rm server client
-
-45
+	rm server client
 all: server client
 
 server: udpserver.c
-  gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
+	gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
 
 client: udpclient.c
-  gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
+	gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
 
 clean:
-  rm server client
+	rm server client
+all: server client
+
+server: udpserver.c
+	gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
+
+client: udpclient.c
+	gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
+
+clean:
+	rm server client
+all: server client
+
+server: udpserver.c
+	gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
+
+client: udpclient.c
+	gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
+
+clean:
+	rm server client
+all: server client
+
+server: udpserver.c
+	gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
+
+client: udpclient.c
+	gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
+
+clean:
+	rm server client
+all: server client
+
+server: udpserver.c
+	gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
+
+client: udpclient.c
+	gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
+
+clean:
+	rm server client
+all: server client
+
+server: udpserver.c
+	gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
+
+client: udpclient.c
+	gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
+
+clean:
+	rm server client
+all: server client
+
+server: udpserver.c
+	gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
+
+client: udpclient.c
+	gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
+
+clean:
+	rm server client
+all: server client
+
+server: udpserver.c
+	gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
+
+client: udpclient.c
+	gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
+
+clean:
+	rm server client
+all: server client
+
+server: udpserver.c
+	gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
+
+client: udpclient.c
+	gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
+
+clean:
+	rm server client
+all: server client
+
+server: udpserver.c
+	gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
+
+client: udpclient.c
+	gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
+
+clean:
+	rm server client
+all: server client
+
+server: udpserver.c
+	gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
+
+client: udpclient.c
+	gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
+
+clean:
+	rm server client
+all: server client
+
+server: udpserver.c
+	gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
+
+client: udpclient.c
+	gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
+
+clean:
+	rm server client
+all: server client
+
+server: udpserver.c
+	gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
+
+client: udpclient.c
+	gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
+
+clean:
+	rm server client
+all: server client
+
+server: udpserver.c
+	gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
+
+client: udpclient.c
+	gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
+
+clean:
+	rm server client
+all: server client
+
+server: udpserver.c
+	gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
+
+client: udpclient.c
+	gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
+
+clean:
+	rm server client
+all: server client
+
+server: udpserver.c
+	gcc -Wall udpserver.c -o server  -lm -lcrypto -lssl
+
+client: udpclient.c
+	gcc -Wall udpclient.c -o client -lm -lcrypto -lssl
+
+clean:
+	rm server client

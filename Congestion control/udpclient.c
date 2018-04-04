@@ -115,7 +115,7 @@ int send_and_wait_for_ack(int seq, int sz)
             //printf("seq didn't match, %d %d\n", seq, seq_);
           return -1;
         }
-       // printf("sending successful seq number did match with ack %d\n", seq_);
+        //printf("sending successful seq number did match with ack %d\n", seq_);
 
         return 0; //success
      // read from the socket
@@ -147,7 +147,7 @@ void fill_window_and_send()
 /*            while(send_and_wait_for_ack(baseptr-1, check + sizeof(int)) == -1);
 */               
          n = sendto(sockfd, message, sz+ sizeof(int), 0, &serveraddr, serverlen);
-         printf("sending message %d which has %d bytes\n",  message->seq_no, sz);
+       //printf("%d\n",  message->seq_no);
 
         if (n < 0) 
           error("ERROR in sendto");
@@ -183,7 +183,7 @@ void receive_and_set_ptrs()
             printf("seq %d\n", seq);
         }
 */        seq = message->seq_no;
-        printf("received ack %d\n", seq);
+        //printf("received ack %d\n", seq);
         if(seq > currptr)
         {
             WIN_SIZE = WIN_SIZE + seq - currptr;
@@ -191,14 +191,14 @@ void receive_and_set_ptrs()
             //printf("ap now = %d\n",  ap);
            /* if(seq == no_of_packets -1) fseek(ap,0, SEEK_END);
                 else fseek(ap,(seq - currptr)*BUFSIZE , SEEK_CUR);*/
-            printf("ap + =%d\n", (seq - currptr)*BUFSIZE);
+            //printf("ap + =%d\n", (seq - currptr)*BUFSIZE);
             currptr = seq ;
 
         }
    }
    else
    {
-        printf("timeout error\n");
+        //printf("timeout error\n");
 /*        fp = ap;
 */        baseptr = currptr;
         WIN_SIZE = WIN_SIZE/2;
@@ -210,7 +210,7 @@ void receive_and_set_ptrs()
 }
 int main(int argc, char **argv) 
 {   
-    int prob_by_100 = 80;
+    int prob_by_100 = 50;
 
     currptr = -1;
     baseptr = -1;
@@ -301,7 +301,7 @@ int main(int argc, char **argv)
     serverlen = sizeof(serveraddr);
     //printf("The file name is %s\n", filename);        
 
-    while(send_and_wait_for_ack(0, 1+strlen(message->buf)+sizeof(int)) == -1);
+    while(send_and_wait_for_ack(prob_by_100, 1+strlen(message->buf)+sizeof(int)) == -1);
 
 
     bzero(buf, BUFSIZE);
@@ -320,13 +320,15 @@ int main(int argc, char **argv)
     int tp;
     while( currptr < no_of_packets -1  )
     {
-        printf("currptr %d, baseptr %d \n", currptr, baseptr );        
+        if(WIN_SIZE < 3) WIN_SIZE  = 3;
+        //printf("WIN_SIZE %d \n", WIN_SIZE );        
         fill_window_and_send();
         receive_and_set_ptrs();
+
       //  printf("currptr %d, baseptr %d \n", currptr, baseptr );
 
     }
-    printf("outside currptr %d, baseptr %d \n", currptr, baseptr );        
+   // printf("outside currptr %d, baseptr %d \n", currptr, baseptr );        
 
 
     fclose(fp);

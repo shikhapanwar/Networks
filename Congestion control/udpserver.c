@@ -172,14 +172,15 @@ int main(int argc, char **argv) {
     int cx = snprintf ( file_name_, BUFSIZE, "output_%s", file_name);  // 5 <- SEQ_NUM_SIZE  
     pch = strtok (NULL," ");
    printf(" no_of_packets :- %s\n",pch);
-       printf("check\n");
+       //printf("check\n");
 
     no_of_packets = atoi(pch);
-    printf("check\n");
+    //printf("check\n");
     pch = strtok (NULL," ");
      printf("Size :- %s\n",pch);
     
      prob_by_100 = message->seq_no;
+     printf("prob_by_100 = %d\n", prob_by_100);
     /* Open file */
     FILE *fp = fopen(file_name_,"w+");
 
@@ -190,7 +191,7 @@ int main(int argc, char **argv) {
      */
     strcpy(buf, "ACK 0");
     strcpy(message->buf, buf);
-    message -> seq_no = 0;
+   // message -> seq_no = 0;
     n = sendto(sockfd, message, sizeof(message), 0, 
          (struct sockaddr *) &clientaddr, clientlen);
 
@@ -205,6 +206,7 @@ int main(int argc, char **argv) {
     /*
      * recvfrom: receive a UDP datagram from a client
      */
+     //printf("Expecting seq_no %d\n", i);
     bzero(buf, BUFSIZE);
     n = recvfrom(sockfd, message, sizeof(*message), 0,
      (struct sockaddr *) &clientaddr, &clientlen);
@@ -213,11 +215,13 @@ int main(int argc, char **argv) {
       error("ERROR in recvfrom");
         if(i == message -> seq_no)
         {
-          r = rand() / RAND_MAX;
-          printf("%f, %f",r, prob_by_100 );
+          r = rand() %100;
+          r = r/100.0;
+
+          //printf("%f, %d",r, prob_by_100 );
           if( (float)prob_by_100/100.00 >  r) 
           {
-            printf("Dropping this packet for testing\n");
+            printf("Dropping this packet for testing at i =%d \n", i);
             continue;
           }  // packet dropped
           //printf("packet matched %d\n", i);
@@ -245,20 +249,20 @@ int main(int argc, char **argv) {
     //printf("server received datagram from %s (%s)\n", hostp->h_name, hostaddrp);
 
   fwrite(message->buf,1,n-sizeof(int), fp);
-  printf("writing %d bytes of packet  %d\n", n-sizeof(int), message->seq_no );
+  //printf("writing %d packet  %d\n", message->seq_no );
   //printf("server receive %d seq_no and %d bytes\n", message->seq_no, strlen(message->buf));
 
 
      n = sendto(sockfd, message, sizeof(message), 0, 
          (struct sockaddr *) &clientaddr, clientlen);
-     printf("sent ack %d \n",message->seq_no);
+    //printf("sent ack %d \n",message->seq_no);
     if (n < 0) 
       error("ERROR in sendto");
     if(!no_of_packets )  break;
     
   }
   fclose(fp);
-  printf("File received\n");
+  //printf("File received\n");
   //strcpy(MD_checksum_val,"\0");
 
   /* compute MD5_checksum hash value */ 
@@ -270,7 +274,7 @@ int main(int argc, char **argv) {
     while(1)
     {
       n = sendto(sockfd, MD_checksum_val, strlen(MD_checksum_val)+1, 0, (struct sockaddr *) &clientaddr, clientlen);
-      printf("sent MD5  %s\n", MD_checksum_val);
+      //printf("sent MD5  %s\n", MD_checksum_val);
         if (n < 0) 
             error("ERROR in sendto");
 
