@@ -34,20 +34,24 @@
 #include <setjmp.h>
 
 #include <errno.h>
+#include <math.h>
 
 #define PACKET_SIZE     4096
 
 #define MAX_WAIT_TIME   5
 
-#define MAX_NO_PACKETS  3
-
+#define MAX_NO_PACKETS  1
+#define INF 100
+#define MAX_TIME 1000
 char sendpacket[PACKET_SIZE];
 
 char recvpacket[PACKET_SIZE];
 
-int sockfd, datalen = 56;
+double rtt = 0, t_rtt, mx_rtt = 0, mn_rtt = INF;
+double vec[MAX_TIME];
 
-int nsend = 0, nreceived = 0;
+int sockfd, datalen = 56;
+int nsend = 0, nrecv = 0;
 
 struct sockaddr_in dest_addr;
 
@@ -63,13 +67,14 @@ unsigned short cal_chksum(unsigned short *addr, int len);
 
 int pack(int pack_no);
 
-void send_packet(void);
+void send_packet(int attempt);
 
-void recv_packet(void);
+double recv_packet(void);
 
-int unpack(char *buf, int len);
+double unpack(char *buf, int len);
 
 void tv_sub(struct timeval *out, struct timeval *in);
+double calculateSD();
 
 void statistics(int signo)
 
@@ -79,14 +84,35 @@ void statistics(int signo)
 
     printf("%d packets transmitted, %d received , %%%d lost\n", nsend,
 
-        nreceived, (nsend - nreceived) / nsend * 100);
-
+        nrecv, (nsend - nrecv) / nsend * 100);
+    printf("rtt min/avg/max/mdev = %3f/%3f/%3f/%3lf\n", mn_rtt, t_rtt/nrecv,mx_rtt,calculateSD());
+// to be done 
     close(sockfd);
 
     exit(1);
 
 } 
 
+
+
+double calculateSD()
+{
+    double sum = 0.0, mean, standardDeviation = 0.0;
+
+    int i;
+
+    for(i=0; i<nrecv; ++i)
+    {
+        sum += vec[i];
+    }
+
+    mean = sum/10;
+
+    for(i=0; i<10; ++i)
+        standardDeviation += pow(vec[i] - mean, 2);
+
+    return sqrt(standardDeviation/10);
+}
 
 
 unsigned short cal_chksum(unsigned short *addr, int len)
@@ -179,19 +205,11 @@ int pack(int pack_no)
 
 
 
-void send_packet()
+void send_packet(int attempt)
 
 {
-
-    int packetsize;
-
-    while (nsend < MAX_NO_PACKETS)
-
-    {
-
-        nsend++;
-
-        packetsize = pack(nsend); 
+    signal(SIGINT, statistics);
+    int packetsize = pack(attempt); 
 
         if (sendto(sockfd, sendpacket, packetsize, 0, (struct sockaddr*)
 
@@ -201,11 +219,10 @@ void send_packet()
 
             perror("sendto error");
 
-            continue;
+            return;
 
-        } sleep(1); 
-
-    }
+        }
+    nsend++;
 
 }
 
@@ -213,7 +230,7 @@ void send_packet()
 
 
 
-void recv_packet()
+double recv_packet()
 
 {
 
@@ -222,12 +239,9 @@ void recv_packet()
     extern int errno;
 
     signal(SIGALRM, statistics);
+    signal(SIGINT, statistics);
 
     fromlen = sizeof(from);
-
-    while (nreceived < nsend)
-
-    {
 
         alarm(MAX_WAIT_TIME);
 
@@ -237,23 +251,16 @@ void recv_packet()
 
         {
 
-            if (errno == EINTR)
+                return;
 
-                continue;
 
-            perror("recvfrom error");
+        } 
+        gettimeofday(&tvrecv, NULL); 
+        nrecv++;
+        rtt = unpack(recvpacket, n);
 
-            continue;
-
-        } gettimeofday(&tvrecv, NULL); 
-
-        if (unpack(recvpacket, n) ==  - 1)
-
-            continue;
-
-        nreceived++;
-
-    }
+        return rtt;
+    
 
 }
 
@@ -261,9 +268,10 @@ void recv_packet()
 
 
 
-int unpack(char *buf, int len)
+double unpack(char *buf, int len)
 
 {
+    signal(SIGINT, statistics);
 
     int i, iphdrlen;
 
@@ -285,8 +293,6 @@ int unpack(char *buf, int len)
 
     if (len < 8)
 
-    
-
     {
 
         printf("ICMP packets\'s length is less than 8\n");
@@ -296,22 +302,23 @@ int unpack(char *buf, int len)
     } 
 
 
-
     if ((icmp->icmp_type == ICMP_ECHOREPLY) && (icmp->icmp_id == pid))
 
     {
 
         tvsend = (struct timeval*)icmp->icmp_data;
-
+/*        printf("plz%d\n%d\nplzz\n",tvrecv.tv_usec, tvrecv.tv_sec );
+*/
         tv_sub(&tvrecv, tvsend); 
 
-        rtt = tvrecv.tv_sec * 1000+tvrecv.tv_usec / 1000;
+        rtt = (double)tvrecv.tv_sec * 1000.0+(double)tvrecv.tv_usec / 1000.0;
 
-            
-
-        printf("%d byte from %s: icmp_seq=%u ttl=%d rtt=%.3f ms\n", len,
+        printf("%d byte from %s: icmp_seq=%u ttl=%d time=%.3f ms\n", len,
 
             inet_ntoa(from.sin_addr), icmp->icmp_seq, ip->ip_ttl, rtt);
+
+        return rtt;
+
 
     }
 
@@ -323,7 +330,7 @@ int unpack(char *buf, int len)
 
 
 
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 
 {
 
@@ -336,6 +343,8 @@ main(int argc, char *argv[])
     int waittime = MAX_WAIT_TIME;
 
     int size = 50 * 1024;
+
+    int attempt;
 
     if (argc < 2)
 
@@ -412,19 +421,37 @@ main(int argc, char *argv[])
 
         (dest_addr.sin_addr), datalen);
 
-    send_packet(); 
+    attempt = 0;
+    while(1)
+    {
+        attempt ++;
 
-    recv_packet(); 
+        send_packet(attempt); 
+        
+       rtt = recv_packet(); 
+       printf("rtt %lf\n",rtt );
+       if(rtt > (double)0)
+       {
+            vec[nsend]= rtt;
+            t_rtt += rtt;
 
+            if(rtt > mx_rtt) mx_rtt = rtt;
+            if(rtt < mn_rtt) mn_rtt = rtt;
+       }
+
+       sleep(1);
+    }
     statistics(SIGALRM); 
 
     return 0;
 
 }
 
+
 void tv_sub(struct timeval *out, struct timeval *in)
 
 {
+    
 
     if ((out->tv_usec -= in->tv_usec) < 0)
 
@@ -433,6 +460,7 @@ void tv_sub(struct timeval *out, struct timeval *in)
         --out->tv_sec;
 
         out->tv_usec += 1000000;
+
 
     } out->tv_sec -= in->tv_sec;
 
