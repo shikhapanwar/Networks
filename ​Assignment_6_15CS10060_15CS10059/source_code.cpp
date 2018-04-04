@@ -30,7 +30,7 @@ socklen_t senderlength,receiverlength;
 pthread_t sender;
 pthread_t receiver;
 pthread_mutex_t sender_mutex;
-// pthread_mutex_t receiver_mutex;
+// pthread_mutex_t receiver_mutex; // why ???
 
 /* servermode = 1 server is running */
 int servermode;
@@ -112,7 +112,7 @@ int getdiff()
 	if(base_ptr_sender >= curr_ptr_sender)
 		getdiff = base_ptr_sender - curr_ptr_sender;
 	else
-		getdiff = max_window_size_1 - (curr_ptr_sender - base_ptr_sender);
+		getdiff = max_window_size_1 - (curr_ptr_sender - base_ptr_sender);  // doubt ??
 	
 	return getdiff;
 }
@@ -187,15 +187,15 @@ void send_packets(int actual_bytes)
 			if(actual_bytes > MSS_bytes)	bytes_sent = MSS_bytes;
 			else bytes_sent = actual_bytes;
 			actual_bytes -= bytes_sent;
-			sequence_no = seq_no + getdiff(); 
+			sequence_no = seq_no + getdiff(); // doubt???
 			
 
-			temp = max_window_size_1 - (base_ptr_sender);
+			temp = max_window_size_1 - (base_ptr_sender);  //  doubt -modulo not required?
 			
 			if( temp >= bytes_sent)
 			{
 				memcpy(data,sender_queue + base_ptr_sender,bytes_sent);
-				base_ptr_sender+=bytes_sent;
+				base_ptr_sender+=bytes_sent; // doubt modulo?
 			}
 			else
 			{
@@ -222,7 +222,7 @@ void * rate_control(void *useless)
 	while(1)
 	{
 		// Busy Waiting
-		while(getdiff() == unack_notsent) ;	//no data to send
+		while(getdiff() == unack_notsent) ;	//no data to send doubt??
 		
 		// if data present in the buffer, lock the buffer and send packets
 		pthread_mutex_lock(&sender_mutex);
@@ -253,9 +253,9 @@ void update_window()
 	base_ptr_sender = curr_ptr_sender;
 
 	// set the new ssthresh and cwnd values
-	if(current_cwnd/2 < MSS_bytes)	ssthresh = MSS_bytes;
-	else ssthresh = current_cwnd/2;
-	current_cwnd = min(MSS_bytes,recv_advr_cwnd);
+	if(current_cwnd/2 < MSS_bytes)	ssthresh = MSS_bytes; 
+	else ssthresh = current_cwnd/2; //
+	current_cwnd = min(MSS_bytes,recv_advr_cwnd); // doubt!! shoube be min MSS_bytes-!??? is MSS_bytes, max window size possible, and id so whu ?
 
 	if(ssthresh > current_cwnd)	slow_start = 1;
 	else 	slow_start = 0;
@@ -284,7 +284,7 @@ void update_window(int flag)
 		
 		// update values
 		curr_ptr_sender = ( curr_ptr_sender  + (packet_data.seq_no - seq_no))%(max_window_size_1);
-		unack_notsent-= (packet_data.seq_no - seq_no);
+		unack_notsent-= (packet_data.seq_no - seq_no); // doubt shouldnt it be protected by lock?
 		seq_no = packet_data.seq_no;
 		recv_advr_cwnd = packet_data.size;
 		count_dup_ack = 0;
@@ -292,7 +292,7 @@ void update_window(int flag)
 		//update current window
 		if(slow_start)
 		{
-			current_cwnd = min(current_cwnd+MSS_bytes,recv_advr_cwnd);
+			current_cwnd = min(current_cwnd+MSS_bytes,recv_advr_cwnd);  // shpuln't congesttion window not be very diff from final window with the earlier being updated here?
 			if(current_cwnd >= ssthresh)	slow_start = 0;
 		}
 		else 	current_cwnd = min(current_cwnd+(MSS_bytes*MSS_bytes)/current_cwnd,recv_advr_cwnd);
@@ -435,13 +435,13 @@ void * parse_packet(void *useless)
 	  	else if(packet_data.type == 0)	
 	  	{
 
-	  		if(packet_data.seq_no > seq_no)
+	  		if(packet_data.seq_no > seq_no) 
 	  		{
 	  			pthread_mutex_lock(&sender_mutex);
 	  			update_window(1);	//new ACK received
 	  			pthread_mutex_unlock(&sender_mutex);
 	  		}
-	  		else if(packet_data.seq_no == seq_no)
+	  		else if(packet_data.seq_no == seq_no) // doubt should be <= 
 	  		{
 	  			pthread_mutex_lock(&sender_mutex);
 	  			update_window(2);	//DUP ACK received
