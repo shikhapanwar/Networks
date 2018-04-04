@@ -58,13 +58,17 @@ int main(int argc , char *argv[])
     PORT = atoi(argv[1]);
 
 
-    no_of_users = 2;
-    strcpy(table[0].name,"hardik");
-    table[0].port_no = 8000;
-    strcpy(table[0].ip_addr,"10.109.65.37");
-    strcpy(table[1].name,"shikha");
-    table[1].port_no = 8000;
-    strcpy(table[1].ip_addr,"10.112.3.159");
+    no_of_users = 3;
+    strcpy(table[0].name,"shikha1");
+    table[0].port_no = 8001;
+    strcpy(table[0].ip_addr,"127.0.0.1");
+    strcpy(table[1].name,"shikha2");
+    table[1].port_no = 8002;
+    strcpy(table[1].ip_addr,"127.0.0.1");
+
+    strcpy(table[2].name,"shikha3");
+    table[2].port_no = 8003;
+    strcpy(table[2].ip_addr,"127.0.0.1");
 
     printf("\n %s %d %s",table[0].name,table[0].port_no,table[0].ip_addr);
     printf("\n %s %d %s",table[1].name,table[1].port_no,table[1].ip_addr);
