@@ -63,7 +63,6 @@ struct timeval tv_recv;
 
 unsigned short check_sum( int len, unsigned short *addr);
 
-int pack_(int pack_no);
 
 void my_send_pack_et(int attempt);
 
@@ -73,20 +72,16 @@ double my_recv_pack_et();
 
 double un_pack_(int len, char *buf);
 
-void subt(struct timeval *received_at, struct timeval *sent_at);
 double calculateSD();
 
 void show_stats(int signo)
 
 {
 
-    printf("\n--------------------PING STATISTICS-------------------\n");
+    printf("\n------------------PING STATISTICS-----------------\n");
 
-    printf("%d pack_ets transmitted, %d received , %%%d lost, time %3f\n", nsend,
-
-        nrecv, (nsend - nrecv) / nsend * 100, t_rtt);
-    printf("rtt min/avg/max/mdev = %3f/%3f/%3f/%3lf\n", mn_rtt, t_rtt/nrecv,mx_rtt,calculateSD());
-// to be done 
+    printf("%d packets transmitted, %d received , %%%3f lost\n", nsend, nrecv, (float)(nsend - nrecv) / (float)nsend * 100.0);
+    if(nrecv>0)printf("rtt min/avg/max/mdev = %3f/%3f/%3f/%3lf\n", mn_rtt, t_rtt/nrecv,mx_rtt,calculateSD());
     close(sockfd);
 
     exit(1);
@@ -106,12 +101,12 @@ double calculateSD()
         sum += vec[i];
     }
 
-    mean = sum/nrecv;
+    mean = sum/10;
 
-    for(i=0; i<nrecv; ++i)
+    for(i=0; i<10; ++i)
         standardDeviation += pow(vec[i] - mean, 2);
 
-    return sqrt(standardDeviation/nrecv);
+    return sqrt(standardDeviation/10);
 }
 
 
@@ -125,7 +120,7 @@ unsigned short check_sum(int len, unsigned short *addr)
 
     unsigned short *w = addr;
 
-    unsigned short ans = 0;
+    unsigned short answer = 0;
 
 
 
@@ -147,9 +142,9 @@ unsigned short check_sum(int len, unsigned short *addr)
 
     {
 
-        *(unsigned char*)(&ans) = *(unsigned char*)w;
+        *(unsigned char*)(&answer) = *(unsigned char*)w;
 
-        sum += ans;
+        sum += answer;
 
     }
 
@@ -157,9 +152,9 @@ unsigned short check_sum(int len, unsigned short *addr)
 
     sum += (sum >> 16);
 
-    ans = ~sum;
+    answer = ~sum;
 
-    return ans;
+    return answer;
 
 }
 
@@ -167,21 +162,23 @@ unsigned short check_sum(int len, unsigned short *addr)
 
 
 
-int pack_(int pack_no)
+
+
+
+void my_send_pack_et(int attempt)
 
 {
+    signal(SIGINT, show_stats);
+    int pack_size;
 
-    int i, pack_size;
-
-    struct icmp *icmp;
+    struct icmp *icmp = (struct icmp*)sender_buf;
 
     struct timeval *tval;
 
-
-    icmp = (struct icmp*)sender_buf;
+    ;
     icmp->icmp_cksum = 0;
 
-    icmp->icmp_seq = pack_no;
+    icmp->icmp_seq = attempt;
 
     icmp->icmp_id = pid;
 
@@ -195,23 +192,9 @@ int pack_(int pack_no)
 
     gettimeofday(tval, NULL); 
 
-    icmp->icmp_cksum = check_sum(pack_size,(unsigned short*)icmp); 
+    icmp->icmp_cksum = check_sum(pack_size,(unsigned short*)icmp);  
 
-    return pack_size;
-
-}
-
-
-
-
-
-void my_send_pack_et(int attempt)
-
-{
-    signal(SIGINT, show_stats);
-    int pack_etsize = pack_(attempt); 
-
-        if (sendto(sockfd, sender_buf, pack_etsize, 0, (struct sockaddr*)
+        if (sendto(sockfd, sender_buf, pack_size, 0, (struct sockaddr*)
 
             &addr_dest, sizeof(addr_dest)) < 0)
 
@@ -240,10 +223,10 @@ double my_recv_pack_et()
 
     signal(SIGALRM, show_stats);
     signal(SIGINT, show_stats);
-
+    alarm(MAX_WAIT_TIME);
     fromlen = sizeof(from);
 
-        alarm(MAX_WAIT_TIME);
+        
 
         if ((n = recvfrom(sockfd, recv_buf, sizeof(recv_buf), 0, (struct
 
@@ -256,9 +239,10 @@ double my_recv_pack_et()
 
         } 
         gettimeofday(&tv_recv, NULL); 
-        nrecv++;
+        
         rtt = un_pack_(n, recv_buf);
-
+        if(rtt != -1)
+            nrecv++;
         return rtt;
     
 
@@ -288,32 +272,41 @@ double un_pack_( int len, char *buf)
     iphdrlen = ip->ip_hl << 2; 
 
     icmp = (struct icmp*)(buf + iphdrlen);
+ 
+    len = len - iphdrlen; 
 
-    len -= iphdrlen; 
-
-    if (len < 8)
+    if (!(len >= 8))
 
     {
 
-        printf("ICMP pack_ets\'s length is less than 8\n");
+        printf("ICMP packets \'s leng is less than 8\n");
 
         return  - 1;
 
     } 
 
-
-    if ((icmp->icmp_type == ICMP_ECHOREPLY) && (icmp->icmp_id == pid))
+    if ( (icmp->icmp_id == pid) && (icmp->icmp_type != ICMP_ECHOREPLY) )
+    {
+        my_recv_pack_et();
+        return -1;
+    }
+    if ( (icmp->icmp_id == pid) && (icmp->icmp_type == ICMP_ECHOREPLY) )
 
     {
 
         tvsend = (struct timeval*)icmp->icmp_data;
-/*        printf("plz%d\n%d\nplzz\n",tv_recv.tv_usec, tv_recv.tv_sec );
-*/
-        subt(&tv_recv, tvsend); 
+        if ((tv_recv.tv_usec -= tvsend->tv_usec) < 0)
+
+            {
+                --tv_recv.tv_sec;
+                tv_recv.tv_usec += 1000000;
+
+            } 
+            tv_recv.tv_sec -= tvsend->tv_sec;
 
         rtt = (double)tv_recv.tv_sec * 1000.0+(double)tv_recv.tv_usec / 1000.0;
 
-        printf("%d byte from %s: icmp_seq=%u ttl=%d time=%.3f ms\n", len,
+        printf("%d byte from %s: icmp_seq = %u ttl=%d time=%3f ms\n", len,
 
             inet_ntoa(from.sin_addr), icmp->icmp_seq, ip->ip_ttl, rtt);
 
@@ -349,7 +342,7 @@ int main(int argc, char *argv[])
 
     {
 
-        printf("usage :%s hostname/IP address\n", argv[0]);
+        printf("usage :%s hostname/ IP address \n", argv[0]);
 
         exit(1);
 
@@ -399,7 +392,7 @@ int main(int argc, char *argv[])
 
         {
 
-            perror("gethostbyname error");
+            perror("gethostbyname  error ");
 
             exit(1);
 
@@ -416,7 +409,7 @@ int main(int argc, char *argv[])
 
     pid = getpid();
 
-    printf("PING %s(%s): %d bytes data in ICMP pack_ets.\n", argv[1], inet_ntoa
+    printf("PING %s(%s): %d bytes data in ICMP pack_ets..\n", argv[1], inet_ntoa
 
         (addr_dest.sin_addr), datalen);
 
@@ -446,20 +439,3 @@ int main(int argc, char *argv[])
 }
 
 
-void subt(struct timeval *out, struct timeval *in)
-
-{
-    
-
-    if ((out->tv_usec -= in->tv_usec) < 0)
-
-    {
-
-        --out->tv_sec;
-
-        out->tv_usec += 1000000;
-
-
-    } out->tv_sec -= in->tv_sec;
-
-}
